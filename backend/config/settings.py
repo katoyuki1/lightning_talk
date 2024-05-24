@@ -39,8 +39,9 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     # add
     "rest_framework",
+    'corsheaders',  # corsheadersを追加
     "api",
-    "corsheaders",
+    "accounts.apps.AccountsConfig",
 ]
 
 MIDDLEWARE = [
@@ -108,6 +109,8 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator",},
 ]
 
+LOGIN_REDIRECT_URL = '/index'
+LOGOUT_REDIRECT_URL = '/'
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
@@ -137,7 +140,13 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # CORS. Reactアプリのみ許可
-CORS_ALLOW_ALL_ORIGINS = False
+# CORS_ALLOW_ALL_ORIGINS = False
 CORS_ALLOWED_ORIGINS = [
-  'http://localhost:5173',
+    'http://localhost:5174',  # SvelteフロントエンドのURL
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    'http://localhost:5174',
+]
+
+CORS_ALLOW_CREDENTIALS = True  # 認証情報を許可

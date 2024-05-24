@@ -30,19 +30,35 @@
     showModal = false;
   }
 
-  async function register() {
+async function getCsrfToken() {
     try {
-      await axios.post('http://127.0.0.1:8000/api/register/', { username, email, password });
-      closeModal();
-      goto('/index');
+        const response = await axios.get('http://127.0.0.1:8000/accounts/csrf/', { withCredentials: true });
+        return response.data.csrfToken;
     } catch (error) {
-      console.error('Failed to register', error);
+        console.error('Failed to get CSRF token', error);
     }
-  }
+}
+
+async function register() {
+    try {
+        const csrfToken = await getCsrfToken();
+        await axios.post('http://127.0.0.1:8000/accounts/signup/', 
+            { username, email, password },
+            { 
+                headers: { 'X-CSRFToken': csrfToken },
+                withCredentials: true
+            }
+        );
+        closeModal();
+        goto('/index');
+    } catch (error) {
+        console.error('Failed to register', error);
+    }
+}
 
   async function login() {
     try {
-      await axios.post('http://127.0.0.1:8000/api/login/', { username, password });
+      await axios.post('http://127.0.0.1:8000/accounts/login/', { username, password });
       closeModal();
       goto('/index');
     } catch (error) {

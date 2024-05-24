@@ -6,6 +6,8 @@ from django.conf.urls.static import static
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('accounts/', include('accounts.urls')),  # ここを追加
+    path('accounts/', include('django.contrib.auth.urls')),
 ]+ static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 # DEBUGがTrueの場合にのみ、メディアファイルのURLパターンを追加
