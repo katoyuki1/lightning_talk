@@ -1,31 +1,94 @@
 <script lang="ts">
-  import axios from 'axios';
   import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
+  import { writable } from 'svelte/store';
 
-  interface Video {
-    title: string;
-    description: string;
-    video: string; // URLとしてのビデオファイルのパス
-    created_at?: string; // 日付は文字列として扱う
-  }
+  let title = '';
+  let description = '';
+  let voiceFile = null;
+  let message = writable('');
+  let audios = writable([]);
 
-  let videos: Video[] = [];
+  // 音声ファイルをアップロードする処理
+  async function uploadAudio() {
+    const formData = new FormData();
+    formData.append('title', title);
+    formData.append('description', description);
+    formData.append('voice', voiceFile);
 
-  onMount(async () => {
-    const response = await axios.get('http://127.0.0.1:8000/api/videos/');
-    videos = response.data;
-  });
+    const token = localStorage.getItem('authToken');
 
-  async function deleteVideo(id: number) {
-    if (!confirm('本当に削除しますか？')) return;
+    if (!token) {
+      console.log("Token not found or undefined:", token);
+      message.set('You must be logged in to upload audio.');
+      return;
+    }
+
+    console.log("Using token:", token); // トークンを取得したことを確認
+
     try {
-      await axios.delete(`http://127.0.0.1:8000/api/videos/${id}`);
-      videos = videos.filter(video => video.id !== id); // Remove video from list
+      const response = await fetch('http://localhost:8000/api/audio/', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,  // トークンをヘッダーに追加
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.set('Audio upload successful.');
+        await fetchUserAudios();  // アップロード後に最新のリストをフェッチ
+        // フォームのリセット
+        title = '';
+        description = '';
+        voiceFile = null;
+      } else {
+        message.set(`Upload failed: ${JSON.stringify(data)}`);
+      }
     } catch (error) {
-      console.error('Failed to delete the video', error);
+      console.error("Fetch error:", error);
+      message.set(`Fetch error: ${error}`);
     }
   }
+
+// ユーザーの音声ファイルを取得する処理
+  async function fetchUserAudios() {
+    const token = localStorage.getItem('authToken');
+
+    try {
+      const response = await fetch('http://localhost:8000/api/audio/', {
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log("response.ok");
+        console.log("data: "+ JSON.stringify(data));
+        audios.set(data);
+      } else {
+        message.set(`Failed to fetch audios: ${JSON.stringify(data)}`);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      message.set(`Fetch error: ${error}`);
+    }
+  }
+
+  // 初回のトークン確認
+  onMount(async () => {
+    const token = localStorage.getItem('authToken');
+    console.log("Token retrieved on mount:", token);  // マウント時にトークンが取得されているか確認
+    if (!token) {
+      message.set('You must be logged in to view this page.');
+    } else {
+      await fetchUserAudios();
+    }
+  });
 </script>
 
 <main class="bg-gray-100 min-h-screen">
@@ -36,35 +99,48 @@
       <button class="mr-4 bg-white text-blue-600 px-4 py-2 rounded" on:click={() => openModal('logout')}>ログアウト</button>
   </div>
   </header>
-   <section class="py-12">
-    <div class="container mx-auto">
-  <h1>ビデオ一覧</h1>
-  <button on:click={() => goto('/upload')}>新規作成</button>
-  <ul>
-    {#each videos as video}
-      <li>{video.title} - {video.description}</li>
-			<video width="320" height="240" controls>
-        <source src="{video.video}" type="video/mp4">
-        Your browser does not support the video tag.
-      </video>
-      <button on:click={() => goto(`/edit/${video.id}`)}>編集</button>
-      <button on:click={() => deleteVideo(video.id)}>削除</button>
-    {/each}
-  </ul>
-    </div>
+  <h1>Your Audio Files</h1>
+
+  <!-- 音声ファイルのリスト -->
+  <!-- 音声ファイルのリスト -->
+  <section>
+    <h2>Audio List</h2>
+    <ul>
+      {#each $audios as audio}
+        <li>
+          <h3>{audio.title}</h3>
+          <p>{audio.description}</p>
+          <audio controls>
+            <source src={audio.voice} type="audio/mp4" />  <!-- 音声ファイルのURLをそのまま使用 -->
+            <source src={audio.voice} type="audio/mpeg" /> <!-- .mp3 ファイルのため -->
+            <source src={audio.voice} type="audio/ogg" />  <!-- .ogg ファイルのため -->
+            Your browser does not support the audio element.
+          </audio>
+        </li>
+      {/each}
+    </ul>
   </section>
-</main>
-<main class="bg-gray-100 min-h-screen">
-  <!-- 既存のコード -->
 
-  <!-- フッター -->
-  <footer class="bg-gray-800 text-white py-6 mt-12">
-    <div class="container mx-auto text-center">
-      <p>&copy; 2024 Talk Advisor. All rights reserved.</p>
+  <!-- 音声ファイルのアップロードフォーム -->
+  <section>
+    <h2>Upload New Audio</h2>
+    <div>
+      <label for="title">Title:</label>
+      <input type="text" id="title" bind:value={title} placeholder="Enter title" />
     </div>
-  </footer>
-</main>
+    <div>
+      <label for="description">Description:</label>
+      <textarea id="description" bind:value={description} placeholder="Enter description"></textarea>
+    </div>
+    <div>
+      <label for="voice">Voice File:</label>
+      <input type="file" id="voice" accept="audio/*" on:change={e => voiceFile = e.target.files[0]} />
+    </div>
+    <button on:click={uploadAudio}>Upload</button>
+  </section>
 
+<p>{$message}</p>
+</main>
 <style>
     .video-card {
     transition: transform 0.3s;
@@ -75,5 +151,68 @@
   }
   main {
     font-family: 'Helvetica Neue', Arial, sans-serif;
+  }
+ main {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 1rem;
+  }
+
+  div {
+    margin-bottom: 1rem;
+  }
+
+  label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: bold;
+  }
+
+  section {
+    margin-bottom: 2rem;
+  }
+
+  h2 {
+    margin-top: 0;
+  }
+
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  textarea,
+  input[type="file"] {
+    display: block;
+    width: 100%;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+
+  button {
+    display: inline-block;
+    padding: 0.75rem 1.25rem;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  button:hover {
+    background-color: #0056b3;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  li {
+    margin-bottom: 1rem;
+  }
+
+  audio {
+    width: 100%;
   }
 </style>

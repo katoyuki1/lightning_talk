@@ -2,6 +2,7 @@
   import axios from 'axios';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
+  import { writable } from 'svelte/store';
 
   let faqs = [
     { question: "Talk Advisorとは何ですか？", answer: "Talk Advisorは自分のプレゼン音声・動画を投稿することで、AIから改善点を教えてもらえるアプリです。" },
@@ -19,6 +20,9 @@
   let username = '';
   let email = '';
   let password = '';
+  let password1 = '';
+  let password2 = '';
+  let message = writable('');
 
 
   function openModal(type) {
@@ -30,23 +34,62 @@
     showModal = false;
   }
 
-  async function register() {
-    try {
-      await axios.post('http://127.0.0.1:8000/api/register/', { username, email, password });
-      closeModal();
-      goto('/index');
-    } catch (error) {
-      console.error('Failed to register', error);
+  async function signup() {
+      const payload = { email, password1, password2 };
+      console.log("Sending payload:", payload);
+
+      try {
+        const response = await fetch('http://localhost:8000/auth/registration/', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+        });
+
+        const data = await response.json();
+        console.log("Response data:", data);
+
+        if (response.ok) {
+          message.set('Registration successful. Check your email to confirm.');
+        } else {
+          message.set(`Error: ${JSON.stringify(data)}`);
+        }
+      } catch (error) {
+        console.error("Fetch error:", error);
+        message.set(`Fetch error: ${error}`);
+      }
     }
-  }
 
   async function login() {
+    const payload = { email, password };
+    console.log("Sending payload:", payload);
+
     try {
-      await axios.post('http://127.0.0.1:8000/api/login/', { username, password });
-      closeModal();
-      goto('/index');
+      const response = await fetch('http://localhost:8000/auth/login/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const data = await response.json();
+      console.log("Response data:", data);
+
+      if (response.ok) {
+        // トークンをローカルストレージに保存
+        localStorage.setItem('authToken', data.key);
+        console.log("Token saved to localStorage:", data.key); // 保存されたトークンを確認
+        message.set('Login successful.');
+        // indexページにリダイレクト
+        goto('/index'); 
+      } else {
+        message.set(`Login failed: ${JSON.stringify(data)}`);
+      }
     } catch (error) {
-      console.error('Failed to login', error);
+      console.error("Fetch error:", error);
+      message.set(`Fetch error: ${error}`);
     }
   }
 </script>
@@ -73,15 +116,15 @@
         <button class="absolute top-0 right-0 m-4 text-gray-600" on:click={closeModal}>✖️</button>
         {#if modalType === 'login'}
           <h2 class="text-2xl font-bold mb-4">ログイン</h2>
-          <input type="text" placeholder="ユーザー名" class="border p-2 mb-4 w-full" bind:value={username} />
-          <input type="password" placeholder="パスワード" class="border p-2 mb-4 w-full" bind:value={password} />
+          <input type="email" bind:value={email} placeholder="Email" class="border p-2 mb-4 w-full" />
+          <input type="password" bind:value={password} placeholder="Password" class="border p-2 mb-4 w-full" />
           <button class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-4" on:click={login}>ログイン</button>
         {:else if modalType === 'signup'}
           <h2 class="text-2xl font-bold mb-4">新規登録</h2>
-          <input type="text" placeholder="ユーザー名" class="border p-2 mb-4 w-full" bind:value={username} />
-          <input type="email" placeholder="メールアドレス" class="border p-2 mb-4 w-full" bind:value={email} />
-          <input type="password" placeholder="パスワード" class="border p-2 mb-4 w-full" bind:value={password} />
-          <button class="bg-green-600 text-white px-4 py-2 rounded w-full mb-4" on:click={register}>登録する</button>
+          <input type="email" bind:value={email} placeholder="Email" class="border p-2 mb-4 w-full" />
+          <input type="password" bind:value={password1} placeholder="Password" class="border p-2 mb-4 w-full" />
+          <input type="password" bind:value={password2} placeholder="Confirm Password" class="border p-2 mb-4 w-full" />
+          <button class="bg-blue-600 text-white px-4 py-2 rounded w-full mb-4" on:click={signup}>登録する</button>
         {/if}
         <button class="bg-gray-600 text-white px-4 py-2 rounded w-full" on:click={closeModal}>とじる</button>
       </div>

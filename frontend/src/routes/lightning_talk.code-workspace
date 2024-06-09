@@ -1,0 +1,14 @@
+{
+	"folders": [
+		{
+			"path": "../../../../venv_private_diary"
+		},
+		{
+			"path": "../../../../video_app"
+		},
+		{
+			"path": "../../.."
+		}
+	],
+	"settings": {}
+}
