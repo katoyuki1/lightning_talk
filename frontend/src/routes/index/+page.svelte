@@ -7,6 +7,7 @@
   let voiceFile = null;
   let message = writable('');
   let audios = writable([]);
+  let editMode = writable(null); // 現在編集モードの音声ファイルのID
 
   // 音声ファイルをアップロードする処理
   async function uploadAudio() {
@@ -79,6 +80,46 @@
     }
   }
 
+  // 音声ファイルを更新する関数
+  async function updateAudio(audio) {
+    const formData = new FormData();
+    formData.append('title', audio.title);
+    formData.append('description', audio.description);
+    if (audio.newVoice) {
+      formData.append('voice', audio.newVoice);  // 新しい音声ファイルが指定されている場合
+    }
+
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      message.set('You must be logged in to update audio.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/audio/${audio.id}/`, {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Token ${token}`,  // トークンをヘッダーに追加
+        },
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.set('Audio update successful.');
+        await fetchUserAudios();  // 更新後に最新のリストをフェッチ
+        editMode.set(null);  // 編集モードを終了
+      } else {
+        message.set(`Update failed: ${JSON.stringify(data)}`);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      message.set(`Fetch error: ${error}`);
+    }
+  }
+
   // 初回のトークン確認
   onMount(async () => {
     const token = localStorage.getItem('authToken');
@@ -102,20 +143,38 @@
   <h1>Your Audio Files</h1>
 
   <!-- 音声ファイルのリスト -->
-  <!-- 音声ファイルのリスト -->
   <section>
     <h2>Audio List</h2>
     <ul>
       {#each $audios as audio}
         <li>
-          <h3>{audio.title}</h3>
-          <p>{audio.description}</p>
-          <audio controls>
-            <source src={audio.voice} type="audio/mp4" />  <!-- 音声ファイルのURLをそのまま使用 -->
-            <source src={audio.voice} type="audio/mpeg" /> <!-- .mp3 ファイルのため -->
-            <source src={audio.voice} type="audio/ogg" />  <!-- .ogg ファイルのため -->
-            Your browser does not support the audio element.
-          </audio>
+          {#if $editMode === audio.id}
+            <!-- 編集モード -->
+            <div>
+              <label for="edit-title-{audio.id}">Title:</label>
+              <input type="text" id="edit-title-{audio.id}" bind:value={audio.title} />
+
+              <label for="edit-description-{audio.id}">Description:</label>
+              <textarea id="edit-description-{audio.id}" bind:value={audio.description}></textarea>
+
+              <label for="edit-voice-{audio.id}">Voice File (optional):</label>
+              <input type="file" id="edit-voice-{audio.id}" accept="audio/*" on:change={e => audio.newVoice = e.target.files[0]} />
+
+              <button on:click={() => updateAudio(audio)}>Update</button>
+              <button on:click={() => editMode.set(null)}>Cancel</button>
+            </div>
+          {:else}
+            <!-- 表示モード -->
+            <h3>{audio.title}</h3>
+            <p>{audio.description}</p>
+            <audio controls>
+              <source src={audio.voice} type="audio/mp4" />
+              <source src={audio.voice} type="audio/mpeg" /> <!-- .mp3 ファイルのため -->
+              <source src={audio.voice} type="audio/ogg" />  <!-- .ogg ファイルのため -->
+              Your browser does not support the audio element.
+            </audio>
+            <button on:click={() => editMode.set(audio.id)}>Edit</button>
+          {/if}
         </li>
       {/each}
     </ul>
