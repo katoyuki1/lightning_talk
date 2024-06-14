@@ -120,6 +120,37 @@
     }
   }
 
+
+  // 音声ファイルを削除する関数
+  async function deleteAudio(audioId) {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      message.set('You must be logged in to delete audio.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/audio/${audioId}/`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Token ${token}`,  // トークンをヘッダーに追加
+        },
+      });
+
+      if (response.ok) {
+        message.set('Audio deleted successfully.');
+        await fetchUserAudios();  // 削除後に最新のリストをフェッチ
+      } else {
+        const data = await response.json();
+        message.set(`Delete failed: ${JSON.stringify(data)}`);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      message.set(`Fetch error: ${error}`);
+    }
+  }
+
   // 初回のトークン確認
   onMount(async () => {
     const token = localStorage.getItem('authToken');
@@ -174,6 +205,7 @@
               Your browser does not support the audio element.
             </audio>
             <button on:click={() => editMode.set(audio.id)}>Edit</button>
+            <button on:click={() => deleteAudio(audio.id)}>Delete</button>  <!-- 削除ボタンを追加 -->
           {/if}
         </li>
       {/each}
