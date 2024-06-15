@@ -20,3 +20,8 @@ class AudioViewSet(viewsets.ModelViewSet):
         print("Perform create called")  # デバッグ用メッセージ
         print(f"User: {self.request.user}")  # リクエストのユーザーを確認
         serializer.save(user=self.request.user)
+    
+    def perform_destroy(self, instance):
+        # ファイルの削除などの前処理をここに追加できます
+        instance.voice.delete(save=False)  # 音声ファイルを削除
+        super().perform_destroy(instance)
