@@ -151,6 +151,36 @@
     }
   }
 
+  async function transcribeAudio(audioId) {
+    const token = localStorage.getItem('authToken');
+
+    if (!token) {
+      message.set('You must be logged in to transcribe audio.');
+      return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:8000/api/audio/${audioId}/transcribe/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${token}`,
+        },
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        message.set(`Transcription: ${data.transcription}`);
+        console.log("文字起こし： "+ data.transcription)
+      } else {
+        message.set(`Transcription failed: ${JSON.stringify(data)}`);
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      message.set(`Fetch error: ${error}`);
+    }
+  }
+
   // 初回のトークン確認
   onMount(async () => {
     const token = localStorage.getItem('authToken');
@@ -204,6 +234,7 @@
               <source src={audio.voice} type="audio/ogg" />  <!-- .ogg ファイルのため -->
               Your browser does not support the audio element.
             </audio>
+            <button on:click={() => transcribeAudio(audio.id)}>Transcribe</button>
             <button on:click={() => editMode.set(audio.id)}>Edit</button>
             <button on:click={() => deleteAudio(audio.id)}>Delete</button>  <!-- 削除ボタンを追加 -->
           {/if}
