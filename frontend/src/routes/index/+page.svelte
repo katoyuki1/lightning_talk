@@ -8,6 +8,7 @@
   let message = writable('');
   let audios = writable([]);
   let editMode = writable(null); // 現在編集モードの音声ファイルのID
+  let advice = writable('');
 
   // 音声ファイルをアップロードする処理
   async function uploadAudio() {
@@ -151,16 +152,16 @@
     }
   }
 
-  async function transcribeAudio(audioId) {
+  async function transcribeAndGetAdvice(audioId) {
     const token = localStorage.getItem('authToken');
 
     if (!token) {
-      message.set('You must be logged in to transcribe audio.');
+      message.set('You must be logged in to get advice.');
       return;
     }
 
     try {
-      const response = await fetch(`http://localhost:8000/api/audio/${audioId}/transcribe/`, {
+      const response = await fetch(`http://localhost:8000/api/audio/${audioId}/transcribe_and_advice/`, {
         method: 'POST',
         headers: {
           'Authorization': `Token ${token}`,
@@ -170,10 +171,11 @@
       const data = await response.json();
 
       if (response.ok) {
-        message.set(`Transcription: ${data.transcription}`);
-        console.log("文字起こし： "+ data.transcription)
+        advice.set(data.advice);
+        message.set('Successfully retrieved advice.');
+        console.log("data.advice: "+ data.advice);
       } else {
-        message.set(`Transcription failed: ${JSON.stringify(data)}`);
+        message.set(`Failed to get advice: ${JSON.stringify(data)}`);
       }
     } catch (error) {
       console.error("Fetch error:", error);
@@ -234,7 +236,7 @@
               <source src={audio.voice} type="audio/ogg" />  <!-- .ogg ファイルのため -->
               Your browser does not support the audio element.
             </audio>
-            <button on:click={() => transcribeAudio(audio.id)}>Transcribe</button>
+            <button on:click={() => transcribeAndGetAdvice(audio.id)}>Get Advice</button>
             <button on:click={() => editMode.set(audio.id)}>Edit</button>
             <button on:click={() => deleteAudio(audio.id)}>Delete</button>  <!-- 削除ボタンを追加 -->
           {/if}

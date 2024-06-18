@@ -1,9 +1,15 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from .models import Audio
-from .serializers import AudioSerializer
+from .models import Audio, Advice
+from .serializers import AudioSerializer, AdviceSerializer
 import whisper
+from openai import OpenAI
+import os
+from dotenv import load_dotenv
+
+# 環境変数を読み込む
+load_dotenv('../.env')
 
 class AudioViewSet(viewsets.ModelViewSet):
     queryset = Audio.objects.all()
@@ -29,12 +35,36 @@ class AudioViewSet(viewsets.ModelViewSet):
         super().perform_destroy(instance)
 
     @action(detail=True, methods=['post'])
-    def transcribe(self, request, pk=None):
+    def transcribe_and_advice(self, request, pk=None):
         audio = self.get_object()
-        audio_path = audio.voice.path  # 音声ファイルのパスを取得
+        audio_path = audio.voice.path
 
-        model = whisper.load_model("small")  # Whisper モデルをロード
-        result = model.transcribe(audio_path)  # 音声ファイルを文字起こし
-        transcript = result["text"]
+        # Whisperで文字起こし
+        model = whisper.load_model("small")
+        result = model.transcribe(audio_path)
+        transcribed_text = result["text"]
 
-        return Response({"transcription": transcript}, status=status.HTTP_200_OK)
+        # OpenAI APIで改善案を取得
+        openai_api_key = os.getenv('OPENAI_API_KEY')
+        client = OpenAI(api_key=openai_api_key)
+        response = client.chat.completions.create(
+            model="gpt-3.5-turbo",
+            messages=[
+                {"role": "system", "content": "あなたは優秀なエディターです。"},
+                {"role": "user", "content": f"以下の文章を改善するには？具体的に提案して:\n\n{transcribed_text}"}
+            ],
+            temperature=0.7
+        )
+
+        # improvement_suggestions = response.choices[0].message['content'].strip()
+        improvement_suggestions = response.choices[0].message.content
+        print("improvement_suggestions: ", improvement_suggestions)
+
+        # 改善案を保存
+        advice = Advice.objects.create(
+            audio=audio,
+            user=request.user,
+            advice_text=improvement_suggestions
+        )
+
+        return Response({"transcription": transcribed_text, "advice": improvement_suggestions}, status=status.HTTP_200_OK)
