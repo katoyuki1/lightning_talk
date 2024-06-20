@@ -1,6 +1,26 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import { writable } from 'svelte/store';
+  import {
+    Input,
+    Label,
+    Button,
+    Modal,
+    AccordionItem,
+    Accordion,
+    Textarea,
+    Radio,
+    Spinner,
+    ButtonGroup,
+    Table,
+    TableBody,
+    TableBodyCell,
+    TableBodyRow,
+    TableHead,
+    TableHeadCell,
+    GradientButton,
+    Popover
+  } from 'flowbite-svelte'
 
   let title = '';
   let description = '';
@@ -9,6 +29,8 @@
   let audios = writable([]);
   let editMode = writable(null); // 現在編集モードの音声ファイルのID
   let advice = writable('');
+  let showModal = false;  // モーダルの表示状態を管理するスト
+  let loadingSource = false
 
   // 音声ファイルをアップロードする処理
   async function uploadAudio() {
@@ -174,6 +196,7 @@
         advice.set(data.advice);
         message.set('Successfully retrieved advice.');
         console.log("data.advice: "+ data.advice);
+        showModal = true;  // モーダルを表示する
       } else {
         message.set(`Failed to get advice: ${JSON.stringify(data)}`);
       }
@@ -181,6 +204,10 @@
       console.error("Fetch error:", error);
       message.set(`Fetch error: ${error}`);
     }
+  }
+
+  function closeModal() {
+    showModal = false;
   }
 
   // 初回のトークン確認
@@ -263,7 +290,39 @@
     <button on:click={uploadAudio}>Upload</button>
   </section>
 
-<p>{$message}</p>
+  <p>{$message}</p>
+<Modal bind:open={showModal} size="xl" outsideclose on:close={closeModal}>
+  <section class="h-[85vh] text-black">
+    {#if loadingSource}
+      <div class="flex flex-1 justify-center items-center h-full">
+        <Spinner size="10" currentFill="#1AE9D0" currentColor="#964FF3" />
+      </div>
+    {:else if !loadingSource && !advice}
+      <div class="flex flex-1 justify-center items-center bg-coolGray-50">
+        <p>アドバイスが得られませんでした</p>
+      </div>
+    {:else if advice}
+      <section class="pb-40">
+        <h2>Advice</h2>
+        <p>{$advice}</p>
+      </section>
+    {/if}
+  </section>
+  <section class="absolute bottom-0 left-0 right-0 bg-white p-4">
+      <div class="flex items-center justify-center mt-4">
+      <Button
+        outline
+        pill
+        class="w-44 mb-3 font-semibold hover:bg-transparent hover:border-opacity-70 hover:text-primary-500 border-2"
+        color="purple"
+        on:click={() => {
+          closeModal
+        }}>閉じる</Button
+      >
+    </div>
+  </section>
+</Modal>
+
 </main>
 <style>
     .video-card {
