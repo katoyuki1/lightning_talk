@@ -1,13 +1,9 @@
 <script>
-  import axios from 'axios';
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import { writable } from 'svelte/store';
 
   let faqs = [
     { question: "Talk Advisorとは何ですか？", answer: "Talk Advisorは自分のプレゼン音声・動画を投稿することで、AIから改善点を教えてもらえるアプリです。" },
     { question: "料金プランについて教えてください。", answer: "複数のプランがあります。詳細は下記をご覧ください。" },
-    { question: "サポートはありますか？", answer: "はい、24時間対応のサポートがあります。" }
+    { question: "サポートはありますか？", answer: "ベータ版のため現在サポート対応は行なっておりません。" }
   ];
 
   let plans = [
@@ -17,96 +13,13 @@
   ];
   let showModal = false;
   let modalType = '';
-  let username = '';
   let email = '';
   let password = '';
   let password1 = '';
   let password2 = '';
-  let message = writable('');
-
-
-  // function openModal(type) {
-  //   modalType = type;
-  //   showModal = true;
-  // }
-
-  // function closeModal() {
-  //   showModal = false;
-  // }
-
-  // async function signup() {
-  //     const payload = { email, password1, password2 };
-  //     console.log("Sending payload:", payload);
-
-  //     try {
-  //       const response = await fetch('http://localhost:8000/auth/registration/', {
-  //         method: 'POST',
-  //         headers: {
-  //           'Content-Type': 'application/json',
-  //         },
-  //         body: JSON.stringify(payload),
-  //       });
-
-  //       const data = await response.json();
-  //       console.log("Response data:", data);
-
-  //       if (response.ok) {
-  //         message.set('Registration successful. Check your email to confirm.');
-  //       } else {
-  //         message.set(`Error: ${JSON.stringify(data)}`);
-  //       }
-  //     } catch (error) {
-  //       console.error("Fetch error:", error);
-  //       message.set(`Fetch error: ${error}`);
-  //     }
-  //   }
-
-  // async function login() {
-  //   const payload = { email, password };
-  //   console.log("Sending payload:", payload);
-
-  //   try {
-  //     const response = await fetch('http://localhost:8000/auth/login/', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify(payload),
-  //     });
-
-  //     const data = await response.json();
-  //     console.log("Response data:", data);
-
-  //     if (response.ok) {
-  //       // トークンをローカルストレージに保存
-  //       localStorage.setItem('authToken', data.key);
-  //       console.log("Token saved to localStorage:", data.key); // 保存されたトークンを確認
-  //       message.set('Login successful.');
-  //       // indexページにリダイレクト
-  //       goto('/index'); 
-  //     } else {
-  //       message.set(`Login failed: ${JSON.stringify(data)}`);
-  //     }
-  //   } catch (error) {
-  //     console.error("Fetch error:", error);
-  //     message.set(`Fetch error: ${error}`);
-  //   }
-  // }
 </script>
 
 <main class="bg-gray-100 min-h-screen">
-  <!-- ヘッダー -->
-  <!-- <header class="bg-blue-600 text-white p-4 shadow-md">
-    <h1 class="text-3xl font-bold">Talk Advisor</h1>
-    <div>
-      <button class="mr-4 bg-white text-blue-600 px-4 py-2 rounded" on:click={() => openModal('login')}>ログイン</button>
-      <button class="bg-white text-blue-600 px-4 py-2 rounded" on:click={() => openModal('signup')}>新規登録</button>
-      <button class="mr-4 bg-white text-blue-600 px-4 py-2 rounded" on:click={async () => {
-        await axios.post('http://127.0.0.1:8000/api/logout/');
-        goto('/');
-      }}>ログアウト</button>
-    </div>
-  </header> -->
 
   <!-- モーダル -->
   {#if showModal}
