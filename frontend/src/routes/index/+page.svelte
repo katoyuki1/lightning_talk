@@ -224,12 +224,12 @@
 
 <main class="bg-gray-100 min-h-screen">
   <!-- ヘッダー -->
-  <header class="bg-blue-600 text-white p-4 shadow-md">
+  <!-- <header class="bg-blue-600 text-white p-4 shadow-md">
     <h1 class="text-3xl font-bold">Talk Advisor</h1>
     <div>
       <button class="mr-4 bg-white text-blue-600 px-4 py-2 rounded" on:click={() => openModal('logout')}>ログアウト</button>
   </div>
-  </header>
+  </header> -->
   <h1>Your Audio Files</h1>
 
   <!-- 音声ファイルのリスト -->

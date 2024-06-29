@@ -25,78 +25,78 @@
   let message = writable('');
 
 
-  function openModal(type) {
-    modalType = type;
-    showModal = true;
-  }
+  // function openModal(type) {
+  //   modalType = type;
+  //   showModal = true;
+  // }
 
-  function closeModal() {
-    showModal = false;
-  }
+  // function closeModal() {
+  //   showModal = false;
+  // }
 
-  async function signup() {
-      const payload = { email, password1, password2 };
-      console.log("Sending payload:", payload);
+  // async function signup() {
+  //     const payload = { email, password1, password2 };
+  //     console.log("Sending payload:", payload);
 
-      try {
-        const response = await fetch('http://localhost:8000/auth/registration/', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(payload),
-        });
+  //     try {
+  //       const response = await fetch('http://localhost:8000/auth/registration/', {
+  //         method: 'POST',
+  //         headers: {
+  //           'Content-Type': 'application/json',
+  //         },
+  //         body: JSON.stringify(payload),
+  //       });
 
-        const data = await response.json();
-        console.log("Response data:", data);
+  //       const data = await response.json();
+  //       console.log("Response data:", data);
 
-        if (response.ok) {
-          message.set('Registration successful. Check your email to confirm.');
-        } else {
-          message.set(`Error: ${JSON.stringify(data)}`);
-        }
-      } catch (error) {
-        console.error("Fetch error:", error);
-        message.set(`Fetch error: ${error}`);
-      }
-    }
+  //       if (response.ok) {
+  //         message.set('Registration successful. Check your email to confirm.');
+  //       } else {
+  //         message.set(`Error: ${JSON.stringify(data)}`);
+  //       }
+  //     } catch (error) {
+  //       console.error("Fetch error:", error);
+  //       message.set(`Fetch error: ${error}`);
+  //     }
+  //   }
 
-  async function login() {
-    const payload = { email, password };
-    console.log("Sending payload:", payload);
+  // async function login() {
+  //   const payload = { email, password };
+  //   console.log("Sending payload:", payload);
 
-    try {
-      const response = await fetch('http://localhost:8000/auth/login/', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
+  //   try {
+  //     const response = await fetch('http://localhost:8000/auth/login/', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify(payload),
+  //     });
 
-      const data = await response.json();
-      console.log("Response data:", data);
+  //     const data = await response.json();
+  //     console.log("Response data:", data);
 
-      if (response.ok) {
-        // トークンをローカルストレージに保存
-        localStorage.setItem('authToken', data.key);
-        console.log("Token saved to localStorage:", data.key); // 保存されたトークンを確認
-        message.set('Login successful.');
-        // indexページにリダイレクト
-        goto('/index'); 
-      } else {
-        message.set(`Login failed: ${JSON.stringify(data)}`);
-      }
-    } catch (error) {
-      console.error("Fetch error:", error);
-      message.set(`Fetch error: ${error}`);
-    }
-  }
+  //     if (response.ok) {
+  //       // トークンをローカルストレージに保存
+  //       localStorage.setItem('authToken', data.key);
+  //       console.log("Token saved to localStorage:", data.key); // 保存されたトークンを確認
+  //       message.set('Login successful.');
+  //       // indexページにリダイレクト
+  //       goto('/index'); 
+  //     } else {
+  //       message.set(`Login failed: ${JSON.stringify(data)}`);
+  //     }
+  //   } catch (error) {
+  //     console.error("Fetch error:", error);
+  //     message.set(`Fetch error: ${error}`);
+  //   }
+  // }
 </script>
 
 <main class="bg-gray-100 min-h-screen">
   <!-- ヘッダー -->
-  <header class="bg-blue-600 text-white p-4 shadow-md">
+  <!-- <header class="bg-blue-600 text-white p-4 shadow-md">
     <h1 class="text-3xl font-bold">Talk Advisor</h1>
     <div>
       <button class="mr-4 bg-white text-blue-600 px-4 py-2 rounded" on:click={() => openModal('login')}>ログイン</button>
@@ -106,9 +106,8 @@
         goto('/');
       }}>ログアウト</button>
     </div>
-  </header>
+  </header> -->
 
-  <!-- モーダル -->
   <!-- モーダル -->
   {#if showModal}
     <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
@@ -176,16 +175,6 @@
       </div>
     </div>
   </section>
-</main>
-<main class="bg-gray-100 min-h-screen">
-  <!-- 既存のコード -->
-
-  <!-- フッター -->
-  <footer class="bg-gray-800 text-white py-6 mt-12">
-    <div class="container mx-auto text-center">
-      <p>&copy; 2024 Talk Advisor. All rights reserved.</p>
-    </div>
-  </footer>
 </main>
 
 <style>
