@@ -209,6 +209,7 @@
   function closeModal() {
     showModal = false;
   }
+  showModal = true;
 
   // 初回のトークン確認
   onMount(async () => {
@@ -291,8 +292,14 @@
   </section>
 
   <p>{$message}</p>
-<Modal bind:open={showModal} size="xl" outsideclose on:close={closeModal}>
-  <section class="h-[85vh] text-black">
+</main>
+
+<Modal 
+  title="AI Advice" 
+  bind:open={showModal} 
+  class="w-1/2"
+  autoclose
+  outsideclose>
     {#if loadingSource}
       <div class="flex flex-1 justify-center items-center h-full">
         <Spinner size="10" currentFill="#1AE9D0" currentColor="#964FF3" />
@@ -302,13 +309,10 @@
         <p>アドバイスが得られませんでした</p>
       </div>
     {:else if advice}
-      <section class="pb-40">
-        <h2>Advice</h2>
+
         <p>{$advice}</p>
-      </section>
     {/if}
-  </section>
-  <section class="absolute bottom-0 left-0 right-0 bg-white p-4">
+  <!-- <section class="absolute bottom-0 left-0 right-0 bg-white p-4">
       <div class="flex items-center justify-center mt-4">
       <Button
         outline
@@ -316,14 +320,13 @@
         class="w-44 mb-3 font-semibold hover:bg-transparent hover:border-opacity-70 hover:text-primary-500 border-2"
         color="purple"
         on:click={() => {
-          closeModal
+          closeModal()
         }}>閉じる</Button
       >
     </div>
-  </section>
+  </section> -->
 </Modal>
 
-</main>
 <style>
     .video-card {
     transition: transform 0.3s;
