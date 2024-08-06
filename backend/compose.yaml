@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres
+    container_name: lightning_talk_postgres
+    environment:
+      POSTGRES_DB: lightning_talk_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: katoyuki
+    volumes:
+      - lightning_talk_volume:/var/lib/postgresql/data
+    ports:
+      - "5434:5432"
+
+  server:
+    build:
+      context: .
+    ports:
+      - "8000:8000"
+    environment:
+      - EMAIL_HOST_USER
+      - EMAIL_HOST_PASSWORD
+      - EMAIL_SEND_TEST_USER
+      - OPENAI_API_KEY
+      - DATABASE_URL=postgres://postgres:katoyuki@db:5432/lightning_talk_db
+    depends_on:
+      - db
+    volumes:
+      - type: bind
+        source: ./media
+        target: /app/media
+        bind:
+          propagation: shared
+
+volumes:
+  lightning_talk_volume:

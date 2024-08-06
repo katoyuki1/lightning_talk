@@ -220,20 +220,15 @@
       await fetchUserAudios();
     }
   });
+
+  let defaultModal = true;
 </script>
 
 <main class="bg-gray-100 min-h-screen">
-  <!-- ヘッダー -->
-  <!-- <header class="bg-blue-600 text-white p-4 shadow-md">
-    <h1 class="text-3xl font-bold">Talk Advisor</h1>
-    <div>
-      <button class="mr-4 bg-white text-blue-600 px-4 py-2 rounded" on:click={() => openModal('logout')}>ログアウト</button>
-  </div>
-  </header> -->
   <h1>Your Audio Files</h1>
 
   <!-- 音声ファイルのリスト -->
-  <section>
+  <section class="">
     <h2>Audio List</h2>
     <ul>
       {#each $audios as audio}
@@ -273,7 +268,7 @@
   </section>
 
   <!-- 音声ファイルのアップロードフォーム -->
-  <section>
+  <section class="">
     <h2>Upload New Audio</h2>
     <div>
       <label for="title">Title:</label>
@@ -291,39 +286,26 @@
   </section>
 
   <p>{$message}</p>
-<Modal bind:open={showModal} size="xl" outsideclose on:close={closeModal}>
-  <section class="h-[85vh] text-black">
-    {#if loadingSource}
-      <div class="flex flex-1 justify-center items-center h-full">
-        <Spinner size="10" currentFill="#1AE9D0" currentColor="#964FF3" />
+  {#if showModal}
+    <div class="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg shadow-lg max-w-xl w-full relative">
+        <button class="absolute top-0 right-0 m-4 text-gray-600" on:click={closeModal}>✖️</button>
+        <h2 class="text-2xl font-bold mb-4">AIによる改善案</h2>
+        {#if loadingSource}
+          <Spinner size="10" currentFill="#1AE9D0" currentColor="#964FF3" />
+        {:else if !loadingSource && !advice}
+          <p>アドバイスが得られませんでした</p>
+        {:else if advice}
+          <p>{$advice}</p>
+        {/if}
+        <button class="bg-gray-600 text-white px-4 py-2 rounded w-full" on:click={closeModal}>とじる</button>
       </div>
-    {:else if !loadingSource && !advice}
-      <div class="flex flex-1 justify-center items-center bg-coolGray-50">
-        <p>アドバイスが得られませんでした</p>
-      </div>
-    {:else if advice}
-      <section class="pb-40">
-        <h2>Advice</h2>
-        <p>{$advice}</p>
-      </section>
-    {/if}
-  </section>
-  <section class="absolute bottom-0 left-0 right-0 bg-white p-4">
-      <div class="flex items-center justify-center mt-4">
-      <Button
-        outline
-        pill
-        class="w-44 mb-3 font-semibold hover:bg-transparent hover:border-opacity-70 hover:text-primary-500 border-2"
-        color="purple"
-        on:click={() => {
-          closeModal
-        }}>閉じる</Button
-      >
     </div>
-  </section>
-</Modal>
+  {/if}
 
 </main>
+
+
 <style>
     .video-card {
     transition: transform 0.3s;
@@ -332,36 +314,8 @@
   .video-card:hover {
     transform: scale(1.05);
   }
-  main {
-    font-family: 'Helvetica Neue', Arial, sans-serif;
-  }
- main {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 1rem;
-  }
 
-  div {
-    margin-bottom: 1rem;
-  }
 
-  label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: bold;
-  }
-
-  section {
-    margin-bottom: 2rem;
-  }
-
-  h2 {
-    margin-top: 0;
-  }
-
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
   textarea,
   input[type="file"] {
     display: block;
@@ -384,18 +338,5 @@
 
   button:hover {
     background-color: #0056b3;
-  }
-
-  ul {
-    list-style: none;
-    padding: 0;
-  }
-
-  li {
-    margin-bottom: 1rem;
-  }
-
-  audio {
-    width: 100%;
   }
 </style>

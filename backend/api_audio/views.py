@@ -40,6 +40,11 @@ class AudioViewSet(viewsets.ModelViewSet):
         audio_path = audio.voice.path
 
         # Whisperで文字起こし
+        whisper_home = os.getenv('WHISPER_HOME')
+        print("whisper_home",whisper_home)
+        if whisper_home:
+            os.makedirs(whisper_home, exist_ok=True)
+            os.environ['WHISPER_HOME'] = whisper_home
         model = whisper.load_model("small")
         result = model.transcribe(audio_path)
         transcribed_text = result["text"]
@@ -56,7 +61,6 @@ class AudioViewSet(viewsets.ModelViewSet):
             temperature=0.7
         )
 
-        # improvement_suggestions = response.choices[0].message['content'].strip()
         improvement_suggestions = response.choices[0].message.content
         print("improvement_suggestions: ", improvement_suggestions)
 
