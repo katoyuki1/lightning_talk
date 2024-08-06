@@ -10,7 +10,7 @@
   }
 </script>
 
-<main class="bg-gray-100 min-h-screen">
+<main class="bg-gray-100">
   <Header />
   <slot />
   <Footer />

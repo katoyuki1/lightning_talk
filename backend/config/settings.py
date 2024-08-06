@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 from pathlib import Path
 import os
 from decouple import config
+import dj_database_url
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -126,16 +127,17 @@ DATABASES = {
     #     "ENGINE": "django.db.backends.sqlite3",
     #     "NAME": BASE_DIR / "db.sqlite3",
     # }
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "lightning_talk_db",
-        #"USER": os.environ.get("DB_USER"),
-        "USER": "postgres",
-        #"PASSWORD": os.environ.get("DB_PASSWORD"),
-        "PASSWORD": "katoyuki",
-        "HOST": "localhost",
-        "PORT": "5434",
-    }
+    # "default": {
+    #     "ENGINE": "django.db.backends.postgresql_psycopg2",
+    #     "NAME": "lightning_talk_db",
+    #     #"USER": os.environ.get("DB_USER"),
+    #     "USER": "postgres",
+    #     #"PASSWORD": os.environ.get("DB_PASSWORD"),
+    #     "PASSWORD": "katoyuki",
+    #     "HOST": "localhost",
+    #     "PORT": "5434",
+    # },
+    'default': dj_database_url.config(default=config('DATABASE_URL'))
 }
 
 
